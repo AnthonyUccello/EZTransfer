@@ -11,12 +11,12 @@ import UIKit
 class MainViewController: UIViewController {
 
     override func viewDidLoad() {
-
+        if let filepath = Bundle.main.path(forResource: "Example", ofType: "png") {
+            let contents = UIImage(contentsOfFile: filepath)
+            print(contents!)
+        } else {
+            print("File not found")
+        }
     }
-
-    override func viewWillAppear(_ animated: Bool) {
-
-    }
-
 }
 
