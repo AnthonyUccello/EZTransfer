@@ -13,26 +13,8 @@ class MainViewController: UIViewController {
     override func viewDidLoad() {
         
         let key = "296b5aa0befe4f4a9e8c5787ca893cd6"
-        let uriBase = "https://westcentralus.api.cognitive.microsoft.com/vision/v1.0"
-        
-//        if let filepath = Bundle.main.path(forResource: "Example", ofType: "png") {
-//            let image = UIImage(contentsOfFile: filepath)
-//            print(image)
-//
-//            guard let data = image?.jpegData(compressionQuality: 1.0) else
-//            {
-//                print("Could not convert image to data")
-//                return
-//            }
-//            let count = data.count / MemoryLayout<UInt8>.size
-//            // create an array of Uint8
-//            var byteArray = [UInt8](repeating: 0, count: count)
-//            // copy bytes into array
-//            data.copyBytes(to: &byteArray, count:count)
-//        } else {
-//            print("File not found")
-//        }
-        
+        let uriBase = "https://westcentralus.api.cognitive.microsoft.com/vision/v2.0/ocr?language=unk&detectOrientation=true"
+
         let filepath = Bundle.main.path(forResource: "Example", ofType: "png")
         let boundary = "Boundary-\(NSUUID().uuidString)"
         let parameters = [
@@ -47,15 +29,18 @@ class MainViewController: UIViewController {
         } catch {
             print("error")
         }
+        request.addValue(key, forHTTPHeaderField: "Ocp-Apim-Subscription-Key")
         
-        print("REQUEST: \(request)")
-        
+       // print("REQUEST: \(request)")
+       // print(request.allHTTPHeaderFields!)
+
         let session = URLSession.shared
         let task = session.dataTask(with: request, completionHandler: { data, response, error -> Void in
             print(response!)
             do {
                 let json = try JSONSerialization.jsonObject(with: data!) as! Dictionary<String, AnyObject>
-                print(json)
+                //print("/n/n RESPONSE: \(json)")
+                self.printPayeeAndAccountNumber(data: json)
             } catch {
                 print("error")
             }
@@ -75,13 +60,13 @@ class MainViewController: UIViewController {
     private func createBody(with parameters: [String: String]?, filePathKey: String, paths: [String], boundary: String) throws -> Data {
         var body = Data()
         
-        if parameters != nil {
-            for (key, value) in parameters! {
-                body.append("--\(boundary)\r\n")
-                body.append("Content-Disposition: form-data; name=\"\(key)\"\r\n\r\n")
-                body.append("\(value)\r\n")
-            }
-        }
+//        if parameters != nil {
+//            for (key, value) in parameters! {
+//                body.append("--\(boundary)\r\n")
+//                body.append("Content-Disposition: form-data; name=\"\(key)\"\r\n\r\n")
+//                body.append("\(value)\r\n")
+//            }
+//        }
         
         for path in paths {
             let url = URL(fileURLWithPath: path)
@@ -98,25 +83,16 @@ class MainViewController: UIViewController {
         return body
     }
     
-//    /// Determine mime type on the basis of extension of a file.
-//    ///
-//    /// This requires `import MobileCoreServices`.
-//    ///
-//    /// - parameter path:         The path of the file for which we are going to determine the mime type.
-//    ///
-//    /// - returns:                Returns the mime type if successful. Returns `application/octet-stream` if unable to determine mime type.
-//
-//    private func mimeType(for path: String) -> String {
-//        let url = URL(fileURLWithPath: path)
-//        let pathExtension = url.pathExtension
-//
-//        if let uti = UTTypeCreatePreferredIdentifierForTag(kUTTagClassFilenameExtension, pathExtension as NSString, nil)?.takeRetainedValue() {
-//            if let mimetype = UTTypeCopyPreferredTagWithClass(uti, kUTTagClassMIMEType)?.takeRetainedValue() {
-//                return mimetype as String
-//            }
-//        }
-//        return "application/octet-stream"
-//    }
+    func printPayeeAndAccountNumber(data: Dictionary<String, AnyObject>)
+    {
+        let regions = data["regions"] as! [Dictionary<String, AnyObject>]
+        print(regions)
+        
+        for kvp in regions
+        {
+            print(kvp)
+        }
+    }
 }
 
 extension Data {
